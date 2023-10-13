@@ -18,7 +18,7 @@ from .utils import JUPYTER_COLLABORATION_EVENTS_URI, LogLevel, OutOfBandChanges
 YFILE = YDOCS["file"]
 
 
-class DocumentRoom(YRoom):
+class DocumentRoom(BaseRoom):
     """A Y room for a possibly stored document (e.g. a notebook)."""
 
     _background_tasks: set[asyncio.Task]
@@ -30,14 +30,13 @@ class DocumentRoom(YRoom):
         file_type: str,
         file: FileLoader,
         logger: EventLogger,
-        ystore: BaseYStore | None,
+        store: BaseYStore | None,
         log: Logger | None,
         save_delay: float | None = None,
         exception_handler: Callable[[Exception, Logger], bool] | None = None,
     ):
         super().__init__(ready=False, ystore=ystore, exception_handler=exception_handler, log=log)
 
-        self._room_id: str = room_id
         self._file_format: str = file_format
         self._file_type: str = file_type
         self._file: FileLoader = file
@@ -66,27 +65,6 @@ class DocumentRoom(YRoom):
     def file_type(self) -> str:
         """Document file type."""
         return self._file_type
-
-    @property
-    def room_id(self) -> str:
-        """
-        The room ID.
-        """
-        return self._room_id
-
-    @property
-    def cleaner(self) -> asyncio.Task | None:
-        """
-        The task for cleaning up the resources.
-        """
-        return self._cleaner
-
-    @cleaner.setter
-    def cleaner(self, value: asyncio.Task) -> None:
-        """
-        Setter for the clean up task.
-        """
-        self._cleaner = value
 
     async def initialize(self) -> None:
         """
