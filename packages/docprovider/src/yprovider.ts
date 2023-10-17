@@ -102,13 +102,16 @@ export class WebSocketProvider implements IDocumentProvider, IForkProvider {
       this._path
     );
 
+    const params =
+      session.sessionId !== null ? { sessionId: session.sessionId } : undefined;
+
     this._yWebsocketProvider = new YWebsocketProvider(
       this._serverUrl,
       `${session.format}:${session.type}:${session.fileId}`,
       this._sharedModel.ydoc,
       {
         disableBc: true,
-        params: { sessionId: session.sessionId },
+        params,
         awareness: this._awareness
       }
     );

@@ -15,7 +15,7 @@ from pycrdt import Text
 from pycrdt_websocket import WebsocketProvider
 
 
-async def test_session_handler_should_create_session_id(
+async def test_session_handler_should_create_a_session_without_session_id(
     rtc_create_file, rtc_fetch_session, jp_serverapp
 ):
     file_format = "text"
@@ -32,10 +32,10 @@ async def test_session_handler_should_create_session_id(
     assert data["format"] == file_format
     assert data["type"] == file_type
     assert data["fileId"] == fim.get_id(file_path)
-    assert data["sessionId"]
+    assert data["sessionId"] is None
 
 
-async def test_session_handler_should_respond_with_session_id(
+async def test_session_handler_should_respond_without_session_id(
     rtc_create_file, rtc_fetch_session, jp_serverapp
 ):
     file_format = "text"
@@ -53,7 +53,7 @@ async def test_session_handler_should_respond_with_session_id(
     assert data["format"] == file_format
     assert data["type"] == file_type
     assert data["fileId"] == fim.get_id(file_path)
-    assert data["sessionId"]
+    assert data["sessionId"] is None
 
 
 async def test_session_handler_should_respond_with_not_found(rtc_fetch_session):
