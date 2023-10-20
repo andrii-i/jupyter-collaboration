@@ -35,6 +35,7 @@ export class WebSocketProvider implements IDocumentProvider, IForkProvider {
   constructor(options: WebSocketProvider.IOptions) {
     this._isDisposed = false;
     this._path = options.path;
+    this._session = null;
     this._contentType = options.contentType;
     this._format = options.format;
     this._serverUrl = options.url;
@@ -96,18 +97,20 @@ export class WebSocketProvider implements IDocumentProvider, IForkProvider {
   }
 
   private async _connect(): Promise<void> {
-    const session = await requestDocSession(
+    this._session = await requestDocSession(
       this._format,
       this._contentType,
       this._path
     );
 
     const params =
-      session.sessionId !== null ? { sessionId: session.sessionId } : undefined;
+      this._session.sessionId !== null
+        ? { sessionId: this._session.sessionId }
+        : undefined;
 
     this._yWebsocketProvider = new YWebsocketProvider(
       this._serverUrl,
-      `${session.format}:${session.type}:${session.fileId}`,
+      `${this._session.format}:${this._session.type}:${this._session.fileId}`,
       this._sharedModel.ydoc,
       {
         disableBc: true,
@@ -179,6 +182,7 @@ export class WebSocketProvider implements IDocumentProvider, IForkProvider {
   private _format: string;
   private _isDisposed: boolean;
   private _path: string;
+  private _session: ISessionModel | null;
   private _ready = new PromiseDelegate<void>();
   private _serverUrl: string;
   private _sharedModel: YDocument<DocumentChange>;
