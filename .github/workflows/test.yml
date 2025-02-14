@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "jupyterlab>=4.0.0,<5"
+          pip install "jupyterlab>=4.4.0a2,<5"
           jlpm install
 
       - name: Run pre-commit
@@ -145,7 +145,7 @@ jobs:
     timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Base Setup
         uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
@@ -273,7 +273,7 @@ jobs:
           name: "sdist"
       - name: Install dependencies
         run: |
-          pip install jupyterlab jupyter_collaboration_ui*.tar.gz jupyter_docprovider*.tar.gz jupyter_server_ydoc*.tar.gz
+          pip install "jupyterlab>=4.4.0a2" jupyter_collaboration_ui*.tar.gz jupyter_docprovider*.tar.gz jupyter_server_ydoc*.tar.gz
 
       - name: Install playwright
         env:
@@ -298,7 +298,7 @@ jobs:
           TIMELINE_FEATURE=1 jlpm test:timeline
       - name: Upload Playwright Test report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jupyter-collaboration-playwright-report
           path: |

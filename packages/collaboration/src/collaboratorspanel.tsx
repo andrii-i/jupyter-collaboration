@@ -97,7 +97,7 @@ export class CollaboratorsPanel extends Panel {
    */
   private _onAwarenessChanged = () => {
     const state = this._awareness.getStates() as any;
-    const collaborators: ICollaboratorAwareness[] = [];
+    const collaboratorsMap = new Map<string, ICollaboratorAwareness>();
 
     state.forEach((value: Partial<ICollaboratorAwareness>, key: any) => {
       if (
@@ -105,10 +105,16 @@ export class CollaboratorsPanel extends Panel {
         value.user &&
         value.user.username !== this._currentUser.identity!.username
       ) {
-        collaborators.push(value as ICollaboratorAwareness);
+        const uniqueKey = `${value.user.username}-${
+          value.current || 'no-current'
+        }`;
+        if (!collaboratorsMap.has(uniqueKey)) {
+          collaboratorsMap.set(uniqueKey, value as ICollaboratorAwareness);
+        }
       }
     });
-    this._collaboratorsChanged.emit(collaborators);
+    // Convert map to array to maintain the same emit interface
+    this._collaboratorsChanged.emit(Array.from(collaboratorsMap.values()));
   };
   private _currentUser: User.IManager;
   private _awareness: Awareness;
@@ -132,9 +138,13 @@ export function CollaboratorsBody(props: {
 
   return (
     <div className={COLLABORATORS_LIST_CLASS}>
-      {collaborators.map((collaborator, i) => {
+      {collaborators.map(collaborator => {
+        const uniqueKey = `${collaborator.user.username}-${
+          collaborator.current || 'no-current'
+        }`;
         return (
           <Collaborator
+            key={uniqueKey}
             collaborator={collaborator}
             fileopener={props.fileopener}
             docRegistry={props.docRegistry}
@@ -155,31 +165,30 @@ export function Collaborator(props: {
   let currentMain = '';
 
   if (collaborator.current) {
+    // Discard widget tracker prefix (e.g. `notebook:` or `editor:`)
     const path = collaborator.current.split(':');
-    currentMain = `${path[1]}:${path[2]}`;
+    currentMain = `${path[1]}`;
   }
 
   const documents: string[] = collaborator.documents || [];
 
   const docs = documents.map(document => {
-    const path = document.split(':');
     const fileTypes = props.docRegistry
-      ?.getFileTypesForPath(path[1])
+      ?.getFileTypesForPath(document)
       ?.filter(ft => ft.icon !== undefined);
-    const icon = fileTypes ? fileTypes[0].icon! : fileIcon;
+    const icon = fileTypes?.length ? fileTypes[0].icon : fileIcon;
     const iconClass: string | undefined = fileTypes
       ? fileTypes[0].iconClass
       : undefined;
 
     return {
-      filepath: path[1],
       filename:
-        path[1].length > 40
-          ? path[1]
+        document.length > 40
+          ? document
               .slice(0, 10)
               .concat('…')
-              .concat(path[1].slice(path[1].length - 15))
-          : path[1],
+              .concat(document.slice(document.length - 15))
+          : document,
       fileLocation: document,
       icon,
       iconClass
@@ -242,7 +251,10 @@ export function Collaborator(props: {
                   className={'jp-DirListing-itemIcon'}
                   stylesheet={'listing'}
                 />
-                <span className={'jp-DirListing-itemText'} title={doc.filepath}>
+                <span
+                  className={'jp-DirListing-itemText'}
+                  title={doc.fileLocation}
+                >
                   {doc.filename}
                 </span>
               </li>
